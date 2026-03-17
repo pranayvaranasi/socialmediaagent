@@ -1,0 +1,91 @@
+manifest:
+  version: "0.1.2"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: thu-vu92/social-media-agent
+    source: https://github.com/thu-vu92/social-media-agent
+    branch: main
+    commit: "d36d1833"
+    scope: [social_media_agent.py, app.py]
+  issued:
+    by: A2AS.org
+    at: '2026-01-26T16:11:07Z'
+  signatures:
+    digest: sha256:0AG0vwp_YdjveUnPDyA2M4XKJO_BH-XgqEMZnR7MP38
+    key: ed25519:mPuk5lcrrxjs3qaNyK46mdm_y0UygjNz2fN3J4XMo7M
+    sig: ed25519:HNNt_UEgpcvVVl6rjSdPgNoZ4jbenGhvHo4gcpkIh42a8eKvfnQQITUgAha8vztwYw39Zfsj5VS86Q03R6CPAQ
+
+agents:
+  content_writer_agent:
+    type: instance
+    models: [gpt-4o-mini]
+    tools: [generate_content, WebSearchTool]
+    params:
+      name: Content Writer Agent
+      instructions: ['You are a talented content writer who writes engaging, humorous, informative and', highly readable social
+          media posts., You will be given a video transcript and social media platforms., You will generate a social media
+          post based on the video transcript, and the social media platforms., You may search the web for up-to-date information
+          on the topic and, fill in some useful details if needed.]
+
+models:
+  gpt-4o-mini:
+    type: literal
+    agents: [content_writer_agent]
+
+tools:
+  generate_content:
+    type: decorator
+    agents: [content_writer_agent]
+  WebSearchTool:
+    type: module
+    agents: [content_writer_agent]
+
+imports:
+  Agent: agents.Agent
+  asyncio: asyncio
+  content_writer_agent: social_media_agent.content_writer_agent
+  CouldNotRetrieveTranscript: youtube_transcript_api._errors.CouldNotRetrieveTranscript
+  dataclass: dataclasses.dataclass
+  function_tool: agents.function_tool
+  get_transcript: social_media_agent.get_transcript
+  InvalidVideoId: youtube_transcript_api._errors.InvalidVideoId
+  ItemHelpers: social_media_agent.ItemHelpers
+  json: json
+  List: typing.List
+  load_dotenv: dotenv.load_dotenv
+  NoTranscriptFound: youtube_transcript_api._errors.NoTranscriptFound
+  OpenAI: openai.OpenAI
+  os: os
+  Runner: social_media_agent.Runner
+  st: streamlit
+  trace: agents.trace
+  TranscriptsDisabled: youtube_transcript_api._errors.TranscriptsDisabled
+  VideoUnavailable: youtube_transcript_api._errors.VideoUnavailable
+  WebSearchTool: agents.WebSearchTool
+  YouTubeTranscriptApi: youtube_transcript_api.YouTubeTranscriptApi
+
+functions:
+  generate_content:
+    type: tool
+    module: social_media_agent
+    args: [video_transcript, social_media_platform]
+  get_transcript:
+    type: sync
+    module: social_media_agent
+    args: [video_id, languages]
+    params:
+      returns: str
+  main:
+    type: async
+    module: social_media_agent
+  run_agent:
+    type: async
+    module: app
+    args: [video_id, query, platforms]
+
+variables:
+  OPENAI_API_KEY:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [social_media_agent]
